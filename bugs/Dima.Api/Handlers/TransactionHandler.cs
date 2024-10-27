@@ -43,7 +43,30 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
 
     public async Task<Response<Transaction?>> UpdateAsync(UpdateTransactionRequest request)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var transaction = await context
+                .Transactions
+                .FirstOrDefaultAsync(x => x.Id == request.Id && x.UserId == request.UserId);
+
+            if (transaction is null)
+                return new Response<Transaction?>(null, 404, "Transação não encontrada");
+
+            transaction.Title = request.Title;
+            transaction.CategoryId = request.CategoryId;
+            transaction.Type = request.Type;
+            transaction.Amount = request.Amount;
+            transaction.PaidOrReceivedAt = request.PaidOrReceivedAt;
+
+            context.Transactions.Update(transaction);
+            await context.SaveChangesAsync();
+
+            return new Response<Transaction?>(transaction, message: "Transação atualizada com sucesso");
+        }
+        catch
+        {
+            return new Response<Transaction?>(null, 500, "Não foi possível alterar a transação");
+        }
     }
 
     public async Task<Response<Transaction?>> DeleteAsync(DeleteTransactionRequest request)
