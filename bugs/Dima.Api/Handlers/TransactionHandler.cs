@@ -115,12 +115,6 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
         {
             request.StartDate ??= DateTime.Now.GetFirstDay();
             request.EndDate ??= DateTime.Now.GetLastDay();
-
-            Console.WriteLine($"StartDate: {request.StartDate}, EndDate: {request.EndDate}");
-            Console.WriteLine("_---------------------------");
-            Console.WriteLine("_---------------------------");
-            Console.WriteLine("_---------------------------");
-            Console.WriteLine("_---------------------------");
         }
         catch
         {
@@ -132,7 +126,7 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
         {
             var query = context
                 .Transactions
-                //.AsNoTracking()
+                .AsNoTracking()
                 .Where(x =>
                     x.PaidOrReceivedAt >= request.StartDate &&
                     x.PaidOrReceivedAt <= request.EndDate &&
