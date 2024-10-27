@@ -21,7 +21,7 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
         {
             var transaction = new Transaction
             {
-                UserId = "test@balta.io",
+                UserId = "teste@balta.io",
                 CategoryId = request.CategoryId,
                 CreatedAt = DateTime.Now,
                 Amount = request.Amount,
@@ -30,8 +30,8 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
                 Type = request.Type
             };
 
-            context.Transactions.AddAsync(transaction);
-            context.SaveChangesAsync();
+            await context.Transactions.AddAsync(transaction);
+            await context.SaveChangesAsync();
 
             return new Response<Transaction?>(transaction, 201, "Transação criada com sucesso!");
         }
@@ -92,6 +92,12 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
         {
             request.StartDate ??= DateTime.Now.GetFirstDay();
             request.EndDate ??= DateTime.Now.GetLastDay();
+
+            Console.WriteLine($"StartDate: {request.StartDate}, EndDate: {request.EndDate}");
+            Console.WriteLine("_---------------------------");
+            Console.WriteLine("_---------------------------");
+            Console.WriteLine("_---------------------------");
+            Console.WriteLine("_---------------------------");
         }
         catch
         {
@@ -103,7 +109,7 @@ public class TransactionHandler(AppDbContext context) : ITransactionHandler
         {
             var query = context
                 .Transactions
-                .AsNoTracking()
+                //.AsNoTracking()
                 .Where(x =>
                     x.PaidOrReceivedAt >= request.StartDate &&
                     x.PaidOrReceivedAt <= request.EndDate &&
