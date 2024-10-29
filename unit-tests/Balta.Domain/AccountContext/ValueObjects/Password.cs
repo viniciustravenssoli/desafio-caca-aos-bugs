@@ -17,23 +17,20 @@ public record Password : ValueObject
 
     #region Constructors
 
-    private Password(string hash)
+    private Password(string hash, bool mustChange, DateTime? expiresAtUtc)
     {
         Hash = hash;
-        ExpiresAtUtc = null;
-        MustChange = false;
+        MustChange = mustChange;
+        ExpiresAtUtc = expiresAtUtc;
     }
 
     #endregion
 
     #region Factories
 
-    public static Password ShouldCreate(string plainText)
+    public static Password ShouldCreate(string plainText, bool mustChange = false, DateTime? expiresAtUtc = null)
     {
         if (string.IsNullOrEmpty(plainText))
-            throw new InvalidPasswordException("Password cannot be null or empty");
-
-        if (string.IsNullOrWhiteSpace(plainText))
             throw new InvalidPasswordException("Password cannot be null or empty");
 
         if (plainText.Length < MinLength)
@@ -44,7 +41,7 @@ public record Password : ValueObject
 
         var hash = ShouldHashPassword(plainText);
         
-        return new Password(hash);
+        return new Password(hash, mustChange, expiresAtUtc);
     }
 
     #endregion
@@ -52,12 +49,22 @@ public record Password : ValueObject
     #region Properties
 
     public string Hash { get; }
-    public DateTime? ExpiresAtUtc { get; }
-    public bool MustChange { get; }
+    public DateTime? ExpiresAtUtc { get; private set; }
+    public bool MustChange { get; private set; }
 
     #endregion
 
     #region Public Methods
+
+    public void MarkAsExpired()
+    {
+        ExpiresAtUtc = DateTime.UtcNow;
+    }
+
+    public void MarkAsMustChange()
+    {
+        MustChange = true;
+    }
 
     public static string ShouldGenerate(
         short length = 16,
@@ -105,6 +112,10 @@ public record Password : ValueObject
 
         return keyToCheck.SequenceEqual(key);
     }
+
+    public bool IsExpired() => ExpiresAtUtc.HasValue && ExpiresAtUtc.Value <= DateTime.UtcNow;
+
+    public bool IsMarkedAsMustChange() => MustChange;
 
     #endregion
 
